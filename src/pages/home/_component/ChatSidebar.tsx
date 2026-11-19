@@ -20,18 +20,16 @@ export default function ChatSidebar({
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-blue-600 text-primary-foreground">
             <Bot size={21} />
           </div>
           <span className="font-semibold">AI Assistant</span>
         </div>
-
-        <PanelLeftClose className="size-5 text-muted-foreground" />
       </div>
 
       <Button
         onClick={onNewChat}
-        className="mt-8 w-full justify-start gap-2 rounded-xl"
+        className="mt-8 w-full justify-start gap-2 rounded-xl bg-blue-600 cursor-pointer hover:bg-blue-700 transition duration-300 ease-in-out"
       >
         <Plus size={18} />
         New Chat
@@ -60,7 +58,7 @@ export default function ChatSidebar({
       <div className="mt-auto">
         <Separator className="mb-4" />
         <p className="px-2 text-xs text-muted-foreground">
-          AI Assistant Demo · Frontend Only
+          AI Assistant - Developed By JK Industries
         </p>
       </div>
 

@@ -3,9 +3,12 @@ import App from './App.tsx'
 import { BrowserRouter } from "react-router-dom";
 
 import './index.css'
+import { TooltipProvider } from '#components/ui/tooltip';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
-    <App />
+    <TooltipProvider>
+      <App/>
+    </TooltipProvider>
   </BrowserRouter>,
 )

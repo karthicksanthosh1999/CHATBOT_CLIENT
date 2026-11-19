@@ -13,7 +13,7 @@ const MessageSection = () => {
     </MessageAvatar>
     <MessageContent>
         <Bubble>
-        <BubbleContent>How can I help you today?</BubbleContent>
+        <BubbleContent className="text-blue-400">How can I help you today?</BubbleContent>
         </Bubble>
     </MessageContent>
     </Message>

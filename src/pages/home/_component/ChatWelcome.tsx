@@ -1,10 +1,6 @@
-
-"use client";
-
 import { useState } from "react";
 import {
   ArrowUp,
-  Bot,
   Code2,
   BookOpen,
   Lightbulb,
@@ -17,6 +13,7 @@ import {
 import { Button } from "../../../components/ui/button";
 import { Textarea } from "../../../components/ui/textarea";
 import { Card } from "../../../components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "#components/ui/tooltip";
 
 const suggestions = [
   {
@@ -69,28 +66,14 @@ export default function ChatWelcome({
 
   return (
     <main className="flex min-h-screen flex-col bg-background">
-
-      {/* Header */}
-      <header className="flex h-16 items-center border-b px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Bot size={23} />
-          </div>
-
-          <span className="text-lg font-semibold tracking-tight">
-            AI Assistant
-          </span>
-        </div>
-      </header>
-
       {/* Welcome section */}
       <section className="flex flex-1 flex-col items-center justify-center px-4 py-10">
 
-        <div className="mb-5 flex size-16 items-center justify-center rounded-2xl bg-secondary text-primary">
+        <div className="mb-5 flex size-16 items-center justify-center rounded-2xl bg-gray-200 text-blue-600">
           <Sparkles size={32} />
         </div>
 
-        <h1 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
+        <h1 className="text-center text-3xl font-bold tracking-tight md:text-4xl text-blue-600">
           How can I help you today?
         </h1>
 
@@ -110,7 +93,7 @@ export default function ChatWelcome({
                 onClick={() => handleSuggestion(item.prompt)}
                 className="cursor-pointer gap-2 rounded-xl border bg-card p-5 shadow-none transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-secondary/40 hover:shadow-sm"
               >
-                <Icon className="size-6 text-primary" />
+                <Icon className="size-6 text-blue-600" />
 
                 <h3 className="font-semibold">
                   {item.title}
@@ -143,30 +126,47 @@ export default function ChatWelcome({
 
             <div className="flex items-center justify-between pt-2">
               <div className="flex items-center gap-3 text-muted-foreground">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  type="button"
-                  aria-label="Attach file"
-                >
-                  <Paperclip />
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  type="button"
-                  aria-label="More options"
-                >
-                  <Plus />
-                </Button>
+                <Tooltip>
+                 <TooltipTrigger render={
+                      <Button
+                          title="Upcoming Update"
+                          disabled={true}
+                          variant="ghost"
+                          size="icon"
+                          type="button"
+                          aria-label="Attach file"
+                          >
+                          <Paperclip />
+                        </Button>
+                    }>
+                    <TooltipContent>
+                      <p>Upcoming Update</p>
+                    </TooltipContent>
+                  </TooltipTrigger>
+                </Tooltip>
+                <Tooltip>
+                <TooltipTrigger render={
+                    <Button 
+                        disabled={true}
+                        variant="ghost"
+                        size="icon"
+                        type="button"
+                        aria-label="More options"
+                        >
+                        <Plus />
+                    </Button>
+                } />
+                  <TooltipContent>
+                     <p>Upcoming Update</p>
+                  </TooltipContent>
+                  </Tooltip>
               </div>
 
               <Button
                 size="icon"
                 onClick={handleSend}
                 disabled={!message.trim()}
-                className="rounded-xl"
+                className="rounded-xl bg-blue-600 hover:bg-blue-700 transition ease-in-out duration-500 cursor-pointer"
                 aria-label="Send message"
               >
                 <ArrowUp />

@@ -3,12 +3,9 @@
 
 import { useState } from "react";
 import { Menu } from "lucide-react";
-
 import { Button } from "../../../components/ui/button";
-import { Separator } from "../../../components/ui/separator";
 
 import type { ChatMessage as MessageType } from "../../../../types/chat";
-
 import ChatSidebar from "./ChatSidebar";
 import ChatWelcome from "./ChatWelcome";
 import ChatWindow from "./ChatWindow";
@@ -86,9 +83,6 @@ export default function ChatLayout() {
           >
             <Menu size={20} />
           </Button>
-
-          <Separator orientation="vertical" className="h-6" />
-
           <span className="text-sm font-semibold">
             New Conversation
           </span>
