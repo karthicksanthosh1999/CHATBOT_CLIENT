@@ -1,20 +1,20 @@
 
-import { Bot, Check, Ellipsis, MessageSquare, Plus, X } from "lucide-react";
+import { Bot, Check, Ellipsis, Loader2, MessageSquare, Plus, X } from "lucide-react";
 
 import { Button } from "../../../components/ui/button";
 import { Separator } from "../../../components/ui/separator";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { axiosInstants } from "../../../instant";
-import type { Conversation } from "../../../../types/chat";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "../../../components/ui/dropdown-menu";
 import { Input } from "#components/ui/input";
+import { useNavigate } from "react-router-dom";
+import { useFetchConversationHook } from "../_hooks/ChatHooks";
 
 interface Props {
   onNewChat: () => void;
@@ -26,8 +26,9 @@ export default function ChatSidebar({
   onSelectChat,
 }: Props) {
 
+  const navigate = useNavigate();
+  const { data: conversations, isLoading, conversationLoading } = useFetchConversationHook()
 
-  const [chats, setChats] = useState<Conversation[]>([]);
   const [selectedChat, setSelectedChat] = useState<number | null>(null);
   const [editMode, setEditMode] = useState(false)
 
@@ -42,19 +43,6 @@ export default function ChatSidebar({
     }
   },[selectedChat])
 
-  const fetchUserChats = async() => {
-    try {
-      const response = await axiosInstants.get(`/chat`)
-      setChats(response.data)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-  
-  useEffect(()=>{
-    fetchUserChats()
-  },[])
-
   const handleSelectChat = (chatId: number) => {
     if(chatId){
       setSelectedChat(chatId)
@@ -67,7 +55,6 @@ export default function ChatSidebar({
       setSelectedChat(chatId)
     }
   };
-
   return (
     <aside className="flex h-full w-72 shrink-0 flex-col border-r bg-card p-4">
 
@@ -92,47 +79,58 @@ export default function ChatSidebar({
         <p className="mb-3 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Recent Chats
         </p>
-
-        <div className="space-y-1">
-          {
-          chats.length === 0 ? 
-            <h1 className="text-sm font-normal tracking-wide text-center text-gray-500">No Chats Found</h1>
-          :
-          chats.map((chat) => (
-            editMode && chat?.id === selectedChat ? (
-              <>
-              <Input type="text" value={chat.title} />
-              <Button className={'bg-red-700 cursor-pointer hover:bg-red-500 transition duration-300 ease-in-out'} onClick={()=>{
-                setSelectedChat(null)
-                setEditMode(false)
-              }}><X/></Button>
-              <Button className={'bg-blue-700 cursor-pointer hover:bg-blue-500 transition duration-300 ease-in-out'}><Check/></Button>
-              </>
-            ) : 
-            <div
-              key={chat.id}
-              className="w-full gap-2 text-sm overflow-hidden text-left font-normal flex items-center justify-between"
-            >
-              <div className="flex">
-                <MessageSquare className="size-4 shrink-0" />
-                <p className="truncate text-start">{chat.title}</p>
-              </div>
-               <DropdownMenu>
-                <DropdownMenuTrigger render={
-                  <Button type="button" variant='link' className="cursor-pointer">
-                    <Ellipsis className="cursor-pointer" />
-                  </Button>
-                } />
-                <DropdownMenuContent className="w-32">
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem className="cursor-pointer" onClick={()=>handleRename(chat.id)}>Rename</DropdownMenuItem>
-                    <DropdownMenuItem className='bg-red-100 cursor-pointer' onClick={()=>handleSelectChat(chat.id)}>Delete</DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+        {
+          conversationLoading ? (
+            <div className="flex items-center gap-2 h-screen justify-center">
+              <Loader2 size={18} className="animate-spin" /> 
+              <h1>Loading Chats...</h1>
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="space-y-1">
+              {
+              conversations && conversations.length === 0 ? 
+                <h1 className="text-sm font-normal tracking-wide text-center text-gray-500">No Chats Found</h1>
+              :
+              conversations && conversations.map((chat) => (
+                editMode && chat?.id === selectedChat ? (
+                  <>
+                  <Input type="text" value={chat.title} />
+                  <Button className={'bg-red-700 cursor-pointer hover:bg-red-500 transition duration-300 ease-in-out'} onClick={()=>{
+                    setSelectedChat(null)
+                    setEditMode(false)
+                  }}><X/></Button>
+                  <Button className={'bg-blue-700 cursor-pointer hover:bg-blue-500 transition duration-300 ease-in-out'}><Check/></Button>
+                  </>
+                ) : 
+                <div
+                  key={chat.id}
+                  className="w-full gap-2 text-sm overflow-hidden text-left font-normal flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-1.5" onClick={()=>{
+                    onSelectChat(chat.id)
+                    navigate(`/home/${chat.id}`)
+                  }}>
+                    <MessageSquare className="size-4 shrink-0" />
+                    <p className="truncate text-start">{chat.title}</p>
+                  </div>
+                   <DropdownMenu>
+                    <DropdownMenuTrigger render={
+                      <Button type="button" variant='link' className="cursor-pointer">
+                        <Ellipsis className="cursor-pointer" />
+                      </Button>
+                    } />
+                    <DropdownMenuContent className="w-32">
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem className="cursor-pointer" onClick={()=>handleRename(chat.id)}>Rename</DropdownMenuItem>
+                        <DropdownMenuItem className='bg-red-100 cursor-pointer' onClick={()=>handleSelectChat(chat.id)}>Delete</DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ))}
+            </div>
+          )
+        }
       </div>
 
       <div className="mt-auto">

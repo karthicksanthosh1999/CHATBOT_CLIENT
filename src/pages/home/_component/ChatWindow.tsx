@@ -31,21 +31,17 @@ export default function ChatWindow({
     <div className="flex min-h-0 flex-1 flex-col">
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
-
+        <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8">
           {messages.map((message) => (
             <ChatMessage key={message.id} message={message} />
           ))}
-
           {loading && <TypingIndicator />}
-
           <div ref={bottomRef} />
-
         </div>
       </ScrollArea>
 
       <div className="border-t bg-background px-4 py-4">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl">
           <ChatInput onSend={onSend} />
 
           <p className="mt-2 text-center text-xs text-muted-foreground">

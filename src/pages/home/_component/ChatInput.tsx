@@ -6,21 +6,26 @@ import { ArrowUp, Paperclip } from "lucide-react";
 
 import { Button } from "../../../components/ui/button";
 import { Textarea } from "../../../components/ui/textarea";
+import { axiosInstants } from "../../../instant";
 
 interface Props {
   onSend: (message: string) => void;
 }
 
 export default function ChatInput({ onSend }: Props) {
+
   const [message, setMessage] = useState("");
 
-  const handleSend = () => {
-    const value = message.trim();
-
-    if (!value) return;
-
-    onSend(value);
-    setMessage("");
+  const handleSend = async() => {
+    try {      
+      const trimmedMessage = message.trim();
+      if (!trimmedMessage) return;
+      await axiosInstants.post(`/chat`, { question : trimmedMessage });
+      onSend(trimmedMessage)
+      setMessage("");
+    } catch (error) {
+      console.log(error)
+    }
   };
 
   return (
@@ -54,7 +59,7 @@ export default function ChatInput({ onSend }: Props) {
           size="icon"
           onClick={handleSend}
           disabled={!message.trim()}
-          className="rounded-xl"
+          className="rounded-xl bg-blue-700"
           aria-label="Send message"
         >
           <ArrowUp className="size-5" />

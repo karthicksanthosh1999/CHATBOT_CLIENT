@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowUp,
   Code2,
@@ -14,6 +14,7 @@ import { Button } from "../../../components/ui/button";
 import { Textarea } from "../../../components/ui/textarea";
 import { Card } from "../../../components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "#components/ui/tooltip";
+import { axiosInstants } from "../../../instant";
 
 const suggestions = [
   {
@@ -43,26 +44,46 @@ const suggestions = [
 ];
 
 interface ChatWelcomeProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (content: string) => void;
+  conversation_id: number | null
 }
 
 export default function ChatWelcome({
   onSendMessage,
+  conversation_id
 }: ChatWelcomeProps) {
   const [message, setMessage] = useState("");
 
-  const handleSend = () => {
-    const trimmedMessage = message.trim();
-
-    if (!trimmedMessage) return;
-
-    onSendMessage(trimmedMessage);
-    setMessage("");
+  const handleSend = async() => {
+    try {      
+      const trimmedMessage = message.trim();
+      if (!trimmedMessage) return;
+      await axiosInstants.post(`/chat`, { question : trimmedMessage });
+      onSendMessage(trimmedMessage);
+      setMessage("");
+    } catch (error) {
+      console.log(error)
+    }
   };
 
   const handleSuggestion = (prompt: string) => {
     onSendMessage(prompt);
   };
+
+  const fetchChats = useCallback(async() => {
+    try {
+      const response = await axiosInstants.get(`/chat${conversation_id}/messages`);
+      console.log(response)
+    } catch (error) {
+      console.log(error)
+    }
+  },[conversation_id]);
+
+  useEffect(()=>{
+    if(conversation_id){
+      fetchChats()
+    }
+  },[fetchChats, conversation_id])
 
   return (
     <main className="flex min-h-screen flex-col bg-background">

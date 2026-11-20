@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Button } from "../../../components/ui/button";
 import type { ChatMessage as MessageType } from "../../../../types/chat";
+import MarkdownRenderer from "#components/MarkdownRenderer";
 
 interface Props {
   message: MessageType;
@@ -27,7 +28,7 @@ export default function ChatMessage({ message }: Props) {
     <div className={`flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
 
       {!isUser && (
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-blue-700 text-primary-foreground">
           <Bot size={18} />
         </div>
       )}
@@ -37,11 +38,11 @@ export default function ChatMessage({ message }: Props) {
         <div
           className={`whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7 ${
             isUser
-              ? "rounded-br-sm bg-primary text-primary-foreground"
+              ? "rounded-br-sm bg-blue-700 text-primary-foreground"
               : "rounded-bl-sm border bg-card text-card-foreground"
           }`}
         >
-          {message.content}
+          <MarkdownRenderer content={message.content} />
         </div>
 
         {!isUser && (

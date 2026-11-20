@@ -5,7 +5,7 @@ export interface ChatMessage {
   id: string;
   role: MessageRole;
   content: string;
-  createdAt: Date;
+  created_at: Date;
 }
 
 export interface Conversation {

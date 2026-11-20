@@ -1,68 +1,53 @@
-
-"use client";
-
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { LogOut, Menu } from "lucide-react";
 import { Button } from "../../../components/ui/button";
-
-import type { ChatMessage as MessageType } from "../../../../types/chat";
 import ChatSidebar from "./ChatSidebar";
 import ChatWelcome from "./ChatWelcome";
 import ChatWindow from "./ChatWindow";
-
-import { getDummyResponse } from "../../../../types/chat-data";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "#components/ui/toast";
+import { useSessionHook } from "../../../hooks/use-auth";
+import { useGetAllMessageHook, usePostMessageHook } from "../_hooks/ChatHooks";
 
 export default function ChatLayout() {
 
-  const navigate = useNavigate()
+  const {chatId} = useParams();
+  const { user } = useSessionHook();
+  const navigate = useNavigate();
+  const {
+    data: allMessages = [],
+    isLoading,
+    isFetching,
+    isError
+} = useGetAllMessageHook( Number(chatId), Number(user?.id));
+  const {mutateAsync: sendMessage, isPending} = usePostMessageHook(Number(chatId));
 
-  const [messages, setMessages] = useState<MessageType[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const handleSend = (content: string) => {
-    if (loading || !content.trim()) return;
-
-    const userMessage: MessageType = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content,
-      createdAt: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setLoading(true);
-
-    // Simulate AI response
-    setTimeout(() => {
-      const response: MessageType = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: getDummyResponse(content),
-        createdAt: new Date(),
-      };
-
-      setMessages((prev) => [...prev, response]);
-      setLoading(false);
-    }, 1200);
+  const handleSend = async (content: string) => {
+      if (isPending || !content.trim()) return;
+      try {
+          await sendMessage(content);
+          toast.add({
+              title: "Success",
+              description: "Message sent successfully"
+          });
+      } catch (error) {
+          console.error(error);
+          toast.add({
+              title: "Error",
+              description: "Failed to send message"
+          });
+      }
   };
+
+  const handleSelectChat = useCallback((id: number) => {
+      navigate(`/home/${id}`);
+  }, [navigate]);
 
   const handleNewChat = () => {
-    setMessages([]);
-    setLoading(false);
-  };
-
-  const handleSelectChat = () => {
-    setMessages([
-      {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: "This is a demo conversation. Start a new chat to try the dummy AI assistant.",
-        createdAt: new Date(),
-      },
-    ]);
+      navigate("/home");
   };
 
   const handleLogout = () => {
@@ -104,24 +89,31 @@ export default function ChatLayout() {
               New Conversation
             </span>
           </div>
-
           <Button title="Logout" size={'icon'} className={'bg-blue-700 hover:bg-blue-500 transition duration-200 ease-in cursor-pointer'} onClick={handleLogout}>
             <LogOut size={18}  />
           </Button>
         </header>
-
-        {messages.length === 0 ? (
-          <ChatWelcome onSend={handleSend} />
-        ) : (
-          <ChatWindow
-            messages={messages}
-            loading={loading}
-            onSend={handleSend}
-          />
-        )}
-
+          {isLoading ? (
+              <div className="flex flex-1 items-center justify-center">
+                  Loading conversation...
+              </div>
+          ) : isError ? (
+              <div className="flex flex-1 items-center justify-center">
+                  Failed to load conversation.
+              </div>
+          ) : allMessages.length === 0 ? (
+            <ChatWelcome
+                onSendMessage={handleSend}
+                conversation_id={Number(chatId)}
+            />
+          ) : (
+            <ChatWindow
+                messages={allMessages}
+                loading={isPending}
+                onSend={handleSend}
+            />
+          )}
       </main>
-      
     </div>
   );
 }
