@@ -9,8 +9,7 @@ export interface ChatMessage {
 }
 
 export interface Conversation {
-  id: string;
+  id: number;
   title: string;
-  messages: ChatMessage[];
-  updatedAt: Date;
+  created_at: Date;
 }

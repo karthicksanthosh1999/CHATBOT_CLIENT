@@ -5,20 +5,20 @@ export const dummyConversations: Conversation[] = [
   {
     id: "chat-1",
     title: "Understanding React Hooks",
-    updatedAt: new Date(),
-    messages: [],
+    created_at: new Date(),
+    
   },
   {
     id: "chat-2",
     title: "Python Learning Roadmap",
-    updatedAt: new Date(),
-    messages: [],
+    created_at: new Date(),
+    
   },
   {
     id: "chat-3",
     title: "What is RAG in AI?",
-    updatedAt: new Date(),
-    messages: [],
+    created_at: new Date(),
+    
   },
 ];
 

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 
 import type { ChatMessage as MessageType } from "../../../../types/chat";
@@ -11,8 +11,13 @@ import ChatWelcome from "./ChatWelcome";
 import ChatWindow from "./ChatWindow";
 
 import { getDummyResponse } from "../../../../types/chat-data";
+import { useNavigate } from "react-router-dom";
+import { toast } from "#components/ui/toast";
 
 export default function ChatLayout() {
+
+  const navigate = useNavigate()
+
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -60,6 +65,16 @@ export default function ChatLayout() {
     ]);
   };
 
+  const handleLogout = () => {
+    navigate("/")
+    toast.add(
+      {
+        title: "Logout",
+        description:"User Logout Successfully"
+      }
+    )
+  }
+
   return (
     <div className="flex h-dvh overflow-hidden bg-background">
 
@@ -74,18 +89,25 @@ export default function ChatLayout() {
 
       <main className="flex min-w-0 flex-1 flex-col">
 
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label="Toggle sidebar"
-          >
-            <Menu size={20} />
+        <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={'cursor-pointer'}
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label="Toggle sidebar"
+            >
+              <Menu size={20} />
+            </Button>
+            <span className="text-sm font-semibold">
+              New Conversation
+            </span>
+          </div>
+
+          <Button title="Logout" size={'icon'} className={'bg-blue-700 hover:bg-blue-500 transition duration-200 ease-in cursor-pointer'} onClick={handleLogout}>
+            <LogOut size={18}  />
           </Button>
-          <span className="text-sm font-semibold">
-            New Conversation
-          </span>
         </header>
 
         {messages.length === 0 ? (
@@ -99,6 +121,7 @@ export default function ChatLayout() {
         )}
 
       </main>
+      
     </div>
   );
 }
