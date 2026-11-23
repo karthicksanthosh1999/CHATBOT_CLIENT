@@ -17,7 +17,6 @@ export default function ChatLayout() {
   const {
     data: allMessages = [],
     isLoading,
-    isFetching,
     isError
 } = useGetAllMessageHook( Number(chatId), Number(user?.id));
   const {mutateAsync: sendMessage, isPending} = usePostMessageHook(Number(chatId));
@@ -97,15 +96,15 @@ export default function ChatLayout() {
               <div className="flex flex-1 items-center justify-center">
                   Loading conversation...
               </div>
-          ) : isError ? (
-              <div className="flex flex-1 items-center justify-center">
-                  Failed to load conversation.
-              </div>
           ) : allMessages.length === 0 ? (
             <ChatWelcome
                 onSendMessage={handleSend}
                 conversation_id={Number(chatId)}
             />
+          ) : isError ? (
+              <div className="flex flex-1 items-center justify-center">
+                  Failed to load conversation.
+              </div>
           ) : (
             <ChatWindow
                 messages={allMessages}

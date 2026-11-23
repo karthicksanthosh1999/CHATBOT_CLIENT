@@ -3,8 +3,7 @@ import { Bot, Check, Ellipsis, Loader2, MessageSquare, Plus, X } from "lucide-re
 
 import { Button } from "../../../components/ui/button";
 import { Separator } from "../../../components/ui/separator";
-import { useCallback, useState } from "react";
-import { axiosInstants } from "../../../instant";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +13,11 @@ import {
 } from "../../../components/ui/dropdown-menu";
 import { Input } from "#components/ui/input";
 import { useNavigate } from "react-router-dom";
-import { useFetchConversationHook } from "../_hooks/ChatHooks";
+import { useDeleteMessageHook, useFetchConversationHook, useUpdateMessageTitleHook } from "../_hooks/ChatHooks";
+import DeleteModel from "#components/delete-model";
+import { useSessionHook } from "../../../hooks/use-auth";
+import { toast } from "#components/ui/toast";
+import type { Conversation } from "../../../../types/chat";
 
 interface Props {
   onNewChat: () => void;
@@ -25,36 +28,58 @@ export default function ChatSidebar({
   onNewChat,
   onSelectChat,
 }: Props) {
-
   const navigate = useNavigate();
-  const { data: conversations, isLoading, conversationLoading } = useFetchConversationHook()
-
-  const [selectedChat, setSelectedChat] = useState<number | null>(null);
+  const { user } = useSessionHook();
+   const { mutate } = useDeleteMessageHook();
+   const { data: conversations, isLoading: conversationLoading } = useFetchConversationHook();
+   const { mutate: updateMessageTitleMutation } = useUpdateMessageTitleHook()
+  
+  const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
   const [editMode, setEditMode] = useState(false)
+  const [deleteModelOpen, setDeleteModelOpen] = useState(false)
+  const [title, setTitle] = useState("")
 
-  const deleteChat = useCallback(async() =>{
-    try {
-      if(selectedChat){
-        const response = await axiosInstants.delete(`/chat/${selectedChat}`);
-        console.log(response.data)
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  },[selectedChat])
-
-  const handleSelectChat = (chatId: number) => {
-    if(chatId){
-      setSelectedChat(chatId)
-    }
-  };
-
-  const handleRename = (chatId: number) => {
-    if(chatId){
+  const handleSelectChat = (chat: Conversation, mode: "DELETE" | "EDIT" = 'EDIT') => {
+    if(chat && mode === 'EDIT'){
       setEditMode(true)
-      setSelectedChat(chatId)
+      setSelectedChat(chat)
+      setTitle(String(chat.title))
+    }else if( chat?.id && mode === "DELETE"){
+      setSelectedChat(chat)
+      setDeleteModelOpen(true)
     }
   };
+
+  const handleRename = (chat: Conversation) => {
+    if(chat.id && title){
+      updateMessageTitleMutation(
+        { conversationId: chat.id, title }, 
+        {
+          onSuccess: () => {
+            toast.add({
+              title: "Message Rename",
+              description: "Renamed Successfully"
+            })
+             setEditMode(false)
+            setSelectedChat(null)
+          }
+      })
+    }
+  };
+
+  const confirmDelete = (conversationId: number) => {
+    if (conversationId == null || user?.id == null) return;
+    mutate(
+      { conversationId, userId: user.id },
+      {
+        onSuccess: () => {
+          setDeleteModelOpen(false);
+          setSelectedChat(null);
+        },
+      }
+    );
+  };
+
   return (
     <aside className="flex h-full w-72 shrink-0 flex-col border-r bg-card p-4">
 
@@ -92,21 +117,28 @@ export default function ChatSidebar({
                 <h1 className="text-sm font-normal tracking-wide text-center text-gray-500">No Chats Found</h1>
               :
               conversations && conversations.map((chat) => (
-                editMode && chat?.id === selectedChat ? (
+                editMode && chat?.id === selectedChat?.id ? (
                   <>
-                  <Input type="text" value={chat.title} />
+                  <Input
+                    type="text"
+                    name="conversation"
+                    value={title}
+                    placeholder="Enter conversation title"
+                    readOnly={!editMode}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
                   <Button className={'bg-red-700 cursor-pointer hover:bg-red-500 transition duration-300 ease-in-out'} onClick={()=>{
                     setSelectedChat(null)
                     setEditMode(false)
                   }}><X/></Button>
-                  <Button className={'bg-blue-700 cursor-pointer hover:bg-blue-500 transition duration-300 ease-in-out'}><Check/></Button>
+                  <Button onClick={()=>handleRename(chat)} className={'bg-blue-700 cursor-pointer hover:bg-blue-500 transition duration-300 ease-in-out'}><Check/></Button>
                   </>
                 ) : 
                 <div
                   key={chat.id}
                   className="w-full gap-2 text-sm overflow-hidden text-left font-normal flex items-center justify-between"
                 >
-                  <div className="flex items-center gap-1.5" onClick={()=>{
+                  <div className="flex items-center gap-1.5 w-50 cursor-pointer" onClick={()=>{
                     onSelectChat(chat.id)
                     navigate(`/home/${chat.id}`)
                   }}>
@@ -121,8 +153,8 @@ export default function ChatSidebar({
                     } />
                     <DropdownMenuContent className="w-32">
                       <DropdownMenuGroup>
-                        <DropdownMenuItem className="cursor-pointer" onClick={()=>handleRename(chat.id)}>Rename</DropdownMenuItem>
-                        <DropdownMenuItem className='bg-red-100 cursor-pointer' onClick={()=>handleSelectChat(chat.id)}>Delete</DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer" onClick={()=>handleSelectChat(chat, "EDIT")}>Rename</DropdownMenuItem>
+                        <DropdownMenuItem className='bg-red-100 cursor-pointer' onClick={()=>handleSelectChat(chat, "DELETE")}>Delete</DropdownMenuItem>
                       </DropdownMenuGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -139,6 +171,17 @@ export default function ChatSidebar({
           AI Assistant - Developed By JK Industries
         </p>
       </div>
+
+      {
+        selectedChat && 
+        <DeleteModel
+          title="Delete Chat"
+          selectedId= {selectedChat.id}
+          confirmDelete={confirmDelete}
+          modelClose={setDeleteModelOpen}
+          modelOpen={deleteModelOpen}
+        />
+    }
 
     </aside>
   );
